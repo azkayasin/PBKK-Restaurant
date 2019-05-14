@@ -11,12 +11,14 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -80,6 +82,7 @@ public class RestaurantController {
 	}
 	
 	@ResponseBody
+	@ResponseStatus(value = HttpStatus.CREATED)
 	@RequestMapping(value = "/register", method = RequestMethod.POST)
 	public Map<String, Object> registerRestaurant(
 				@RequestParam(value = "name") String name,
@@ -110,7 +113,7 @@ public class RestaurantController {
 		res.setKondisi(0);
 		res.setCreatedAt(new Date());
 		restaurantDAO.save(res);
-		return Util.getSuccessResult();
+		return Util.getSuccessResult(res);
 	}
 	
 	@ResponseBody
@@ -170,9 +173,9 @@ public class RestaurantController {
 		String restoIdString=securityService.getUserId();
 		Integer restoId=Integer.valueOf(restoIdString);
 		
-		restaurantDAO.updateRestaurant(restoId, alamat, telefon, deskripsi, kategori, buka, tutup);
+		Restaurant  resto=restaurantDAO.updateRestaurant(restoId, alamat, telefon, deskripsi, kategori, buka, tutup);
 		
-		return Util.getSuccessResult("Restaurant was updated");
+		return Util.getSuccessUpdate(resto);
 	}
 	
 	
@@ -196,6 +199,7 @@ public class RestaurantController {
 	}
 	
 	@ResponseBody
+	@ResponseStatus(value = HttpStatus.CREATED)
 	@RestaurantTokenRequired
 	@RequestMapping(value = "/menu/add", method = RequestMethod.POST)
 	public Map<String, Object> addMenumakanan(
@@ -220,7 +224,7 @@ public class RestaurantController {
 		menu.setStatus(1);
 		menu.setCreatedAt(new Date());
 		menuDAO.save(menu);
-		return Util.getSuccessResult("add menu success");
+		return Util.getSuccessResult(menu);
 	}
 	
 	@ResponseBody
@@ -237,9 +241,9 @@ public class RestaurantController {
 		String restoIdString=securityService.getUserId();
 		Integer restoId=Integer.valueOf(restoIdString);
 		
-		menuDAO.updatemenu(id, name, harga, kategori, deskripsi, restoId);
+		Menu menu =menuDAO.updatemenu(id, name, harga, kategori, deskripsi, restoId);
 		
-		return Util.getSuccessResult("Menu was updated");
+		return Util.getSuccessUpdate(menu);
 	}
 	
 	@ResponseBody

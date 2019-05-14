@@ -3,6 +3,8 @@ package com.packtpub.util;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.packtpub.model.Restaurant;
+
 public class Util {
 	@SuppressWarnings("unchecked")
 	public static <T> T getUserNotAvailableError(){
@@ -49,6 +51,16 @@ public class Util {
 		map.put("result", "error");
 		map.put("value", obj);
 		
+		return (T) map;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> T getSuccessUpdate(Object obj){
+		Map<String, Object> map = new LinkedHashMap<>();
+		
+		map.put("result_code", 0);
+		map.put("result", "Updated");
+		map.put("value", obj);
 		return (T) map;
 	}
 }

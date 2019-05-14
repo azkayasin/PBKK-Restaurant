@@ -49,7 +49,7 @@ public class MenuDAO {
 		}
 	}
 
-	public void updatemenu(Integer id, String name, Double harga, String kategori, String deskripsi, Integer restoId) {
+	public Menu updatemenu(Integer id, String name, Double harga, String kategori, String deskripsi, Integer restoId) {
 		Menu menu=menuRepository.findByIdmenu(id);
 		if(menu!=null)
 		{
@@ -80,6 +80,7 @@ public class MenuDAO {
 		{
 			throw new IllegalArgumentException("Menu is not found");
 		}
+		return menu;
 		
 	}
 

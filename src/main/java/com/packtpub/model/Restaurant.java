@@ -79,6 +79,12 @@ public class Restaurant {
 	
 	@Column(name="kondisi")
 	private Integer kondisi;
+	
+	@Column(name="deals")
+	private String deals;
+	
+	@Column(name="gambar")
+	private String gambar;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@LastModifiedDate
@@ -98,6 +104,12 @@ public class Restaurant {
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+	public String getDeals() {
+		return deals;
+	}
+	public void setDeals(String deals) {
+		this.deals = deals;
 	}
 	
 	public String getAlamat() {

@@ -113,7 +113,7 @@ public class RestaurantDAO {
 		}
 	}
 
-	public void updateRestaurant(Integer restoId, String alamat, String telefon, String deskripsi, String kategori,
+	public Restaurant updateRestaurant(Integer restoId, String alamat, String telefon, String deskripsi, String kategori,
 			Time buka, Time tutup) {
 		Restaurant resto=restaurantRepository.findByIdrestaurant(restoId);
 		if(resto!=null)
@@ -140,6 +140,7 @@ public class RestaurantDAO {
 			
 			restaurantRepository.save(resto);
 		}
+		return resto;
 		
 	}
 }

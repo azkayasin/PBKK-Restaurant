@@ -28,13 +28,12 @@ public class Restaurant {
 		// TODO Auto-generated constructor stub
 	}
 
-	public Restaurant(Integer id, String name,String alamat, String telefon, String email,String deskripsi, Time buka , Time tutup, Integer status,Integer kondisi) {
+	public Restaurant(Integer id, String name,String alamat, Integer resto_id,String deskripsi, Time buka , Time tutup, Integer status,Integer kondisi) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.alamat = alamat;
-		this.telefon = telefon;
-		this.email = email;
+		this.resto_id = resto_id;
 		this.deskripsi = deskripsi;
 		this.buka = buka;
 		this.tutup = tutup;
@@ -53,11 +52,8 @@ public class Restaurant {
 	@Column(name="alamat")
 	private String alamat;
 	
-	@Column(name="telefon")
-	private String telefon;
-	
-	@Column(name="email")
-	private String email;
+	@Column(name="resto_id")
+	private Integer resto_id;
 	
 	@Column(name="deskripsi")
 	private String deskripsi;
@@ -70,9 +66,6 @@ public class Restaurant {
 	
 	@Column(name="kategori")
 	private String kategori;
-	
-	@Column(name="password")
-	private String password;
 	
 	@Column(name="status")
 	private Integer status;
@@ -119,18 +112,11 @@ public class Restaurant {
 		this.alamat = alamat;
 	}
 	
-	public String getTelefon() {
-		return telefon;
+	public Integer getResto_id() {
+		return resto_id;
 	}
-	public void setTelefon(String telefon) {
-		this.telefon = telefon;
-	}
-	
-	public String getEmail() {
-		return email;
-	}
-	public void setEmail(String email) {
-		this.email = email;
+	public void setResto_id(Integer resto_id) {
+		this.resto_id =resto_id;
 	}
 	
 	public String getDeskripsi() {
@@ -165,14 +151,6 @@ public class Restaurant {
 	}
 	public void setKondisi(Integer kondisi) {
 		this.kondisi = kondisi;
-	}
-	
-	public String getPassword() {
-		return password;
-	}
-	public void setPassword(String password) {
-		String sha256password = DigestUtils.sha256Hex(password);
-		this.password = sha256password;
 	}
 
 	public Integer getStatus() {

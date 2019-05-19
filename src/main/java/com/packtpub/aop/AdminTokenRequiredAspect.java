@@ -14,6 +14,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import com.packtpub.dao.TokenDAO;
 import com.packtpub.model.Token;
 import com.packtpub.service.SecurityServiceImpl;
+import com.packtpub.service.SecurityService;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.packtpub.aop.AdminTokenRequired;
 
 import io.jsonwebtoken.Claims;
@@ -25,6 +27,9 @@ public class AdminTokenRequiredAspect {
 	@Autowired
 	TokenDAO tokenDAO;
 	
+	@Autowired
+	SecurityService securityService;
+	
 	@Before("@annotation(adminTokenRequired)")
 	public void tokenRequiredWithAnnotation(AdminTokenRequired adminTokenRequired) throws Throwable{
 		
@@ -33,27 +38,18 @@ public class AdminTokenRequiredAspect {
 		
 		// checks for token in request header
 		String tokenInHeader = request.getHeader("token");
-		Token tokenDB=tokenDAO.getByStringToken(tokenInHeader);
 		
 		if(StringUtils.isEmpty(tokenInHeader)){
 			throw new IllegalArgumentException("Empty token");
 		}
-		if(tokenDB==null)
-		{
-			throw new IllegalArgumentException("User token is not authorized");
-		}
 		
-		Claims claims = Jwts.parser()         
-			       .setSigningKey(DatatypeConverter.parseBase64Binary(SecurityServiceImpl.secretKey))
-			       .parseClaimsJws(tokenInHeader).getBody();
+		DecodedJWT verifyToken=securityService.verifyToken(tokenInHeader);
 		
-		if(claims == null || claims.getSubject() == null){
+		if(verifyToken == null){
 			throw new IllegalArgumentException("Token Error : Claim is null");
 		}
 		
-		String subject = claims.getSubject();
-		
-		if(subject.split("=").length != 2 || new Integer(subject.split("=")[1]) != 3){
+		if(verifyToken.getClaim("username") == null || !verifyToken.getClaim("role").asString().equals("Admin")){
 			throw new IllegalArgumentException("User token is not authorized");
 		}		
 	}

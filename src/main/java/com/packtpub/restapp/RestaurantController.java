@@ -1,6 +1,7 @@
 package com.packtpub.restapp;
 
 import java.util.Date;
+import java.io.IOException;
 import java.sql.Time;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,6 +33,7 @@ import com.packtpub.dao.RestaurantDAO;
 import com.packtpub.model.Menu;
 import com.packtpub.model.Restaurant;
 import com.packtpub.model.User;
+import com.packtpub.service.RestaurantService;
 import com.packtpub.service.SecurityService;
 import com.packtpub.util.Util;
 
@@ -48,22 +50,14 @@ public class RestaurantController {
 	MenuDAO menuDAO;
 	
 	@Autowired
+	RestaurantService restaurantService;
+	
+	@Autowired
 	SecurityService securityService;
 	
-	public  Pattern VALID_EMAIL_ADDRESS_REGEX = 
-		    Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
-
-	public void validate(String emailStr) {
-        Matcher matcher = VALID_EMAIL_ADDRESS_REGEX .matcher(emailStr);
-        if(matcher.find()==false)
-        {
-        	throw new IllegalArgumentException("Email doesn't match");
-        }
-	}
-	
-	public void checkMenuName(String name)
+	public void checkMenuName(String name, Integer Id)
 	{
-		if(menuDAO.checkName(name)==false)
+		if(menuDAO.checkName(name, Id)==false)
 		{
 			throw new IllegalArgumentException("Name has been used");
 		}
@@ -75,41 +69,32 @@ public class RestaurantController {
 		{
 			throw new IllegalArgumentException("Name has been used");
 		}
-		if(restaurantDAO.checkEmail(email)==false)
-		{
-			throw new IllegalArgumentException("Email has been used");
-		}
 	}
 	
 	@ResponseBody
+	@RestaurantTokenRequired
 	@ResponseStatus(value = HttpStatus.CREATED)
-	@RequestMapping(value = "/register", method = RequestMethod.POST)
+	@RequestMapping(value = "/data", method = RequestMethod.POST)
 	public Map<String, Object> registerRestaurant(
 				@RequestParam(value = "name") String name,
 				@RequestParam(value = "alamat") String alamat,
-				@RequestParam(value = "telefon") String telefon,
-				@RequestParam(value = "email") String email,
 				@RequestParam(value = "deskripsi") String deskripsi,
 				@RequestParam(value = "buka") Time buka,
 				@RequestParam(value = "tutup") Time tutup,
-				@RequestParam(value = "kategori") String kategori,
-				@RequestParam(value = "password") String password
-			) 
-	{
-		checkAvailable(name,email);
-		validate(email);
-		
+				@RequestParam(value = "kategori") String kategori
+			) throws IOException 
+	{	
+		int restoId=securityService.getUserId();
+		restaurantService.checkAvailable(restoId);
 		Restaurant res=new Restaurant();
 		res.setName(name);
 		res.setAlamat(alamat);
-		res.setTelefon(telefon);
-		res.setEmail(email);
 		res.setDeskripsi(deskripsi);
-		res.setPassword(password);
-		res.setStatus(0);
+		res.setStatus(1);
 		res.setBuka(buka);
 		res.setTutup(tutup);
 		res.setKategori(kategori);
+		res.setResto_id(restoId);
 		res.setKondisi(0);
 		res.setCreatedAt(new Date());
 		restaurantDAO.save(res);
@@ -117,26 +102,11 @@ public class RestaurantController {
 	}
 	
 	@ResponseBody
-	@RequestMapping(value = "/login", method = RequestMethod.POST)
-	public Map<String, Object> login(
-				@RequestParam(value = "email") String email,
-				@RequestParam(value = "password") String password
-			) 
-	{
-		Restaurant resto=restaurantDAO.login(email, password);
-		String subject = resto.getId()+"="+2;
-		String token = securityService.createToken(subject, (60 * 1000 * 60),resto.getId()); // 60 minutes expiry time
-		return Util.getSuccessResult(token);
-	}
-	
-	@ResponseBody
 	@RestaurantTokenRequired
 	@RequestMapping(value = "/open", method = RequestMethod.POST)
-	public Map<String, Object> openRestaurant() 
+	public Map<String, Object> openRestaurant() throws IOException 
 	{
-		String restoIdString=securityService.getUserId();
-		Integer restoId=Integer.valueOf(restoIdString);
-		
+		int restoId=securityService.getUserId();
 		restaurantDAO.openRestaurant(restoId);
 		
 		
@@ -147,10 +117,9 @@ public class RestaurantController {
 	@ResponseBody
 	@RestaurantTokenRequired
 	@RequestMapping(value = "/close", method = RequestMethod.POST)
-	public Map<String, Object> closeRestaurant() 
+	public Map<String, Object> closeRestaurant() throws IOException 
 	{
-		String restoIdString=securityService.getUserId();
-		Integer restoId=Integer.valueOf(restoIdString);
+		int restoId=securityService.getUserId();
 		
 		restaurantDAO.closeRestaurant(restoId);
 		
@@ -160,28 +129,27 @@ public class RestaurantController {
 	}
 	@ResponseBody
 	@RestaurantTokenRequired
-	@RequestMapping(value = "/updatedata", method = RequestMethod.POST)
+	@RequestMapping(value = "/updatedata", method = RequestMethod.PUT)
 	public Map<String, Object> updatedata(
+				@RequestParam(value = "name") String name,
 				@RequestParam(value = "alamat") String alamat,
-				@RequestParam(value = "telefon") String telefon,
 				@RequestParam(value = "deskripsi") String deskripsi,
 				@RequestParam(value = "kategori") String kategori,
 				@RequestParam(value = "buka") Time buka,
 				@RequestParam(value = "tutup") Time tutup
-			) 
+			) throws IOException 
 	{
-		String restoIdString=securityService.getUserId();
-		Integer restoId=Integer.valueOf(restoIdString);
+		int restoId=securityService.getUserId();
 		
-		Restaurant  resto=restaurantDAO.updateRestaurant(restoId, alamat, telefon, deskripsi, kategori, buka, tutup);
+		restaurantDAO.updateRestaurant(restoId, name, alamat, deskripsi, kategori, buka, tutup);
 		
-		return Util.getSuccessUpdate(resto);
+		return Util.getSuccessResult("Data was updated");
 	}
 	
 	
 	@ResponseBody
 	@AdminTokenRequired
-	@RequestMapping(value = "/verifikasi/{id}", method = RequestMethod.POST)
+	@RequestMapping(value = "/deactive/{id}", method = RequestMethod.POST)
 	public Map<String, Object> VerifikasiRestaurant(
 				@PathVariable("id") Integer id
 			)
@@ -193,9 +161,9 @@ public class RestaurantController {
 			return Util.getErrorResult("Id tidak ditemukan");
 		}
 		
-		restaurantDAO.verifikasiRestaurant(id);
+		restaurantDAO.deactiveRestaurant(id);
 		
-		return Util.getSuccessResult("Verifikasi restaurant sukses");
+		return Util.getSuccessResult("Deactive restaurant success");
 	}
 	
 	@ResponseBody
@@ -207,12 +175,11 @@ public class RestaurantController {
 			@RequestParam(value = "harga") Double harga,
 			@RequestParam(value = "kategori") String kategori,
 			@RequestParam(value = "deskripsi") String deskripsi
-			) 
+			) throws IOException 
 	{
-		String restoIdString=securityService.getUserId();
-		Integer restoId=Integer.valueOf(restoIdString);
+		int restoId=securityService.getUserId();
 		
-		checkMenuName(name);
+		checkMenuName(name,restoId);
 		
 		Menu menu=new Menu();
 		menu.setName(name);
@@ -229,21 +196,20 @@ public class RestaurantController {
 	
 	@ResponseBody
 	@RestaurantTokenRequired
-	@RequestMapping(value = "/menu/update", method = RequestMethod.POST)
+	@RequestMapping(value = "/menu/update", method = RequestMethod.PUT)
 	public Map<String, Object> updatemenu(
 				@RequestParam(value = "id") Integer id,
 				@RequestParam(value = "name") String name,
 				@RequestParam(value = "harga") Double harga,
 				@RequestParam(value = "kategori") String kategori,
 				@RequestParam(value = "deskripsi") String deskripsi
-			) 
+			) throws IOException 
 	{
-		String restoIdString=securityService.getUserId();
-		Integer restoId=Integer.valueOf(restoIdString);
+		int restoId=securityService.getUserId();
 		
-		Menu menu =menuDAO.updatemenu(id, name, harga, kategori, deskripsi, restoId);
+		menuDAO.updatemenu(id, name, harga, kategori, deskripsi, restoId);
 		
-		return Util.getSuccessUpdate(menu);
+		return Util.getSuccessResult("Menu Was Updated");
 	}
 	
 	@ResponseBody
@@ -251,10 +217,9 @@ public class RestaurantController {
 	@RequestMapping(value = "/menu/delete", method = RequestMethod.POST)
 	public Map<String, Object> deletemenu(
 				@RequestParam(value = "id") Integer id
-			) 
+			) throws IOException 
 	{
-		String restoIdString=securityService.getUserId();
-		Integer restoId=Integer.valueOf(restoIdString);
+		int restoId=securityService.getUserId();
 		menuDAO.deletemenu(id, restoId);
 		
 		return Util.getSuccessResult("Menu was deleted");
@@ -265,10 +230,9 @@ public class RestaurantController {
 	@RequestMapping(value = "/menu/outofstock", method = RequestMethod.POST)
 	public Map<String, Object> outofstockmenu(
 				@RequestParam(value = "id") Integer id
-			) 
+			) throws IOException 
 	{
-		String restoIdString=securityService.getUserId();
-		Integer restoId=Integer.valueOf(restoIdString);
+		int restoId=securityService.getUserId();
 		menuDAO.outofstockmenu(id, restoId);
 		
 		return Util.getSuccessResult("Menu updated to out of stock");
@@ -277,10 +241,9 @@ public class RestaurantController {
 	@ResponseBody
 	@RestaurantTokenRequired
 	@RequestMapping("/semuamenu")
-	public List<Menu> getAllRestaurantMenu() 
+	public List<Menu> getAllRestaurantMenu() throws IOException 
 	{
-		String restoIdString=securityService.getUserId();
-		Integer restoId=Integer.valueOf(restoIdString);
+		int restoId=securityService.getUserId();
 		return menuDAO.findAllRestaurantMenu(restoId);
 	}
 

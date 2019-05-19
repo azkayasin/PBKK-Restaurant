@@ -19,8 +19,8 @@ public interface MenuRepository extends JpaRepository<Menu, Integer> {
 	@Query("select u from Menu u where u.id = ?1")
 	Menu findByIdmenu(Integer id);
 	
-	@Query("select u from Menu u where u.name = :name")
-	Menu findByName(String name);
+	@Query("select u from Menu u where u.name = :name and u.res_id = :Id")
+	Menu findByName(String name, Integer Id);
 	
 	@Query("select u from Menu u where u.id = ?1 and u.status = 1")
 	Menu menuaktif(Integer id);

@@ -53,6 +53,9 @@ public class Menu {
 	@Column(name="deskripsi")
 	private String deskripsi;
 	
+	@Column(name="gambar")
+	private String gambar;
+	
 	@Column(name="res_id")
 	private Integer res_id;
 	
@@ -81,6 +84,13 @@ public class Menu {
 		this.name = name;
 	}
 	
+	public String getGambar() {
+		return gambar;
+	}
+	public void setGambar(String gambar) {
+		this.gambar = gambar;
+	}
+	
 	public Double getHarga() {
 		return harga;
 	}
@@ -102,7 +112,7 @@ public class Menu {
 		this.deskripsi = deskripsi;
 	}
 	
-	public String getkKategori() {
+	public String getKategori() {
 		return kategori;
 	}
 	public void setKategori(String kategori) {

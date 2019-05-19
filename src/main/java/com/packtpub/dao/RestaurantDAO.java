@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.packtpub.model.Restaurant;
 import com.packtpub.model.User;
@@ -33,25 +34,18 @@ public class RestaurantDAO {
 		Restaurant res=restaurantRepository.findByIdrestaurant(id);
 		if(res!=null)
 		{
-			return new Restaurant(res.getId(),res.getName(),res.getAlamat(),res.getTelefon(),res.getEmail(),res.getDeskripsi(),res.getBuka(),res.getTutup(),res.getKondisi(),res.getStatus());
+			return new Restaurant(res.getId(),res.getName(),res.getAlamat(),res.getResto_id(),res.getDeskripsi(),res.getBuka(),res.getTutup(),res.getKondisi(),res.getStatus());
 		}
 		return null;
 	}
 	
-	public Restaurant login(String email,String password)
-	{
-		Restaurant resto=restaurantRepository.findByEmailandPassword(email, DigestUtils.sha256Hex(password));
-		if(resto==null)
-		{
-			throw new IllegalArgumentException("Email or Password is Not Match");
-		}
-		return resto;
-	}
 	
-	public boolean checkEmail(String email)
+	
+	
+	public boolean checkAvailable(Integer resto_id)
 	{
-		Restaurant checkResto=restaurantRepository.findByEmail(email);
-		if(checkResto==null)
+		Restaurant checkResto=restaurantRepository.findByResto_id(resto_id);
+		if(checkResto == null)
 		{
 			return true;
 		}
@@ -60,7 +54,6 @@ public class RestaurantDAO {
 			return false;
 		}
 	}
-	
 	public boolean checkName(String name)
 	{
 		Restaurant checkResto=restaurantRepository.findByName(name);
@@ -73,12 +66,12 @@ public class RestaurantDAO {
 			return false;
 		}
 	}
-	public void verifikasiRestaurant(Integer Id)
+	public void deactiveRestaurant(Integer Id)
 	{
 		Restaurant resto=restaurantRepository.findByIdrestaurant(Id);
 		if(resto!=null)
 		{
-			resto.setStatus(1);
+			resto.setStatus(0);
 			restaurantRepository.save(resto);
 		}
 	}
@@ -91,7 +84,7 @@ public class RestaurantDAO {
 		{
 			throw new IllegalArgumentException("Restaurant is already open");
 		}
-		if(resto!=null)
+		else if(resto!=null)
 		{
 			resto.setKondisi(1);
 			restaurantRepository.save(resto);
@@ -113,21 +106,21 @@ public class RestaurantDAO {
 		}
 	}
 
-	public Restaurant updateRestaurant(Integer restoId, String alamat, String telefon, String deskripsi, String kategori,
+	public void updateRestaurant(Integer restoId, String name, String alamat, String deskripsi, String kategori,
 			Time buka, Time tutup) {
 		Restaurant resto=restaurantRepository.findByIdrestaurant(restoId);
 		if(resto!=null)
 		{
-			if(alamat != null && alamat != "") {
+			if(!StringUtils.isEmpty(name)) {
+				resto.setName(name);
+			}
+			if(!StringUtils.isEmpty(alamat)) {
 				resto.setAlamat(alamat);
 			}
-			if(telefon != null && telefon != "") {
-				resto.setTelefon(telefon);
-			}
-			if(deskripsi != null &&  deskripsi != "") {
+			if(!StringUtils.isEmpty(deskripsi)) {
 				resto.setDeskripsi(deskripsi);
 			}
-			if( kategori != null &&  kategori != "") {
+			if(!StringUtils.isEmpty(kategori)) {
 				resto.setKategori(kategori);
 			}
 			if( buka != null) {
@@ -140,7 +133,7 @@ public class RestaurantDAO {
 			
 			restaurantRepository.save(resto);
 		}
-		return resto;
+//		return resto;
 		
 	}
 }

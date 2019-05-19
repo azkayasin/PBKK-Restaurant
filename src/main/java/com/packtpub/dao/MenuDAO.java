@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.packtpub.model.Menu;
 import com.packtpub.model.Restaurant;
@@ -32,13 +33,13 @@ public class MenuDAO {
 		Menu menu=menuRepository.findByIdmenu(id);
 		if(menu!=null)
 		{
-			return new Menu(menu.getId(),menu.getName(),menu.getHarga(),menu.getStock(),menu.getDeskripsi(),menu.getRes_id(),menu.getkKategori(),menu.getStatus());
+			return new Menu(menu.getId(),menu.getName(),menu.getHarga(),menu.getStock(),menu.getDeskripsi(),menu.getRes_id(),menu.getKategori(),menu.getStatus());
 		}
 		return null;
 	}
 
-	public boolean checkName(String name) {
-		Menu menu=menuRepository.findByName(name);
+	public boolean checkName(String name, Integer Id) {
+		Menu menu=menuRepository.findByName(name, Id);
 		if(menu == null)
 		{
 			return true;
@@ -55,16 +56,16 @@ public class MenuDAO {
 		{
 			if(menu.getRes_id() == restoId)
 			{
-				if(name != null && name != "") {
+				if(!StringUtils.isEmpty(name)) {
 					menu.setName(name);
 				}
 				if(harga != null) {
 					menu.setHarga(harga);
 				}
-				if(kategori != null &&  kategori != "") {
+				if(!StringUtils.isEmpty(kategori)) {
 					menu.setKategori(kategori);
 				}
-				if( deskripsi != null &&  deskripsi != "") {
+				if(!StringUtils.isEmpty(deskripsi)) {
 					menu.setDeskripsi(deskripsi);
 				}
 				menuRepository.save(menu);

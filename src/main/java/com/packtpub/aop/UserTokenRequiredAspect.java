@@ -11,10 +11,12 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.packtpub.aop.UserTokenRequired;
 import com.packtpub.dao.TokenDAO;
 import com.packtpub.model.Token;
 import com.packtpub.service.SecurityServiceImpl;
+import com.packtpub.service.SecurityService;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -25,6 +27,9 @@ public class UserTokenRequiredAspect {
 	@Autowired
 	TokenDAO tokenDAO;
 	
+	@Autowired
+	SecurityService securityService;
+	
 	@Before("@annotation(userTokenRequired)")
 	public void tokenRequiredWithAnnotation(UserTokenRequired userTokenRequired) throws Throwable{
 		
@@ -33,27 +38,26 @@ public class UserTokenRequiredAspect {
 		
 		// checks for token in request header
 		String tokenInHeader = request.getHeader("token");
-		Token tokenDB=tokenDAO.getByStringToken(tokenInHeader);
 		
 		if(StringUtils.isEmpty(tokenInHeader)){
 			throw new IllegalArgumentException("Empty token");
 		}
-		if(tokenDB==null)
-		{
-			throw new IllegalArgumentException("User token is not authorized");
-		}
 		
-		Claims claims = Jwts.parser()         
-			       .setSigningKey(DatatypeConverter.parseBase64Binary(SecurityServiceImpl.secretKey))
-			       .parseClaimsJws(tokenInHeader).getBody();
 		
-		if(claims == null || claims.getSubject() == null){
+		DecodedJWT verifyToken=securityService.verifyToken(tokenInHeader);
+		
+		if(verifyToken == null){
 			throw new IllegalArgumentException("Token Error : Claim is null");
 		}
 		
-		String subject = claims.getSubject();
+		/*Map<String, Claim> claims = verifyToken.getClaims();    //Key is the Claim name
+		Claim claim = claims.get("username");
+		Claim claimT=verifyToken.getClaim("username");*/
 		
-		if(subject.split("=").length != 2){
+		/*Claim role=verifyToken.getClaim("role");
+		String roleUser=role.asString();*/
+		
+		if(verifyToken.getClaim("username") == null){
 			throw new IllegalArgumentException("User token is not authorized");
 		}		
 	}

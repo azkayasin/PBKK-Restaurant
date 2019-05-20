@@ -86,16 +86,19 @@ public class MenuDAO {
 	}
 
 	public void deletemenu(Integer id, Integer restoId) {
-		Menu menu=menuRepository.menuaktif(id);
+		Menu menu=menuRepository.menuaktif(id); 
 		if(menu!=null)
 		{
-			if(menu.getRes_id() == restoId)
+			if(menu.getRes_id().equals(restoId))
 			{
 				menu.setStatus(0);
 				menuRepository.save(menu);
 			}
 			else
 			{
+//				String resto = Integer.toString(restoId);
+//				String tampung2 = Integer.toString(menu.getRes_id());
+//				String myString = resto +"batas" +tampung2;
 				throw new IllegalArgumentException("you dont have access for this menu");
 			}
 			
@@ -112,7 +115,7 @@ public class MenuDAO {
 		Menu menu=menuRepository.menuoutofstock(id);
 		if(menu!=null)
 		{
-			if(menu.getRes_id() == restoId)
+			if(menu.getRes_id().equals(restoId))
 			{
 				menu.setStock(0);
 				menuRepository.save(menu);

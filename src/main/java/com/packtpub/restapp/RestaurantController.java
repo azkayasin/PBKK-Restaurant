@@ -79,8 +79,8 @@ public class RestaurantController {
 				@RequestParam(value = "name") String name,
 				@RequestParam(value = "alamat") String alamat,
 				@RequestParam(value = "deskripsi") String deskripsi,
-				@RequestParam(value = "buka") Time buka,
-				@RequestParam(value = "tutup") Time tutup,
+				@RequestParam(value = "jam_buka") Time buka,
+				@RequestParam(value = "jam_tutup") Time tutup,
 				@RequestParam(value = "kategori") String kategori
 			) throws IOException 
 	{	
@@ -134,9 +134,9 @@ public class RestaurantController {
 				@RequestParam(value = "name") String name,
 				@RequestParam(value = "alamat") String alamat,
 				@RequestParam(value = "deskripsi") String deskripsi,
-				@RequestParam(value = "kategori") String kategori,
-				@RequestParam(value = "buka") Time buka,
-				@RequestParam(value = "tutup") Time tutup
+				@RequestParam(value = "jam_buka") Time buka,
+				@RequestParam(value = "jam_tutup") Time tutup,
+				@RequestParam(value = "kategori") String kategori
 			) throws IOException 
 	{
 		int restoId=securityService.getUserId();
@@ -214,9 +214,9 @@ public class RestaurantController {
 	
 	@ResponseBody
 	@RestaurantTokenRequired
-	@RequestMapping(value = "/menu/delete", method = RequestMethod.POST)
+	@RequestMapping(value = "/menu/delete/{id}", method = RequestMethod.POST)
 	public Map<String, Object> deletemenu(
-				@RequestParam(value = "id") Integer id
+			@PathVariable("id") Integer id
 			) throws IOException 
 	{
 		int restoId=securityService.getUserId();
@@ -227,9 +227,9 @@ public class RestaurantController {
 	
 	@ResponseBody
 	@RestaurantTokenRequired
-	@RequestMapping(value = "/menu/outofstock", method = RequestMethod.POST)
+	@RequestMapping(value = "/menu/outofstock/{id}", method = RequestMethod.POST)
 	public Map<String, Object> outofstockmenu(
-				@RequestParam(value = "id") Integer id
+			@PathVariable("id") Integer id
 			) throws IOException 
 	{
 		int restoId=securityService.getUserId();
@@ -240,11 +240,21 @@ public class RestaurantController {
 	
 	@ResponseBody
 	@RestaurantTokenRequired
-	@RequestMapping("/semuamenu")
+	@RequestMapping("/menu/allmenu")
 	public List<Menu> getAllRestaurantMenu() throws IOException 
 	{
 		int restoId=securityService.getUserId();
 		return menuDAO.findAllRestaurantMenu(restoId);
+	}
+	
+	@ResponseBody
+	@UserTokenRequired
+	@RequestMapping("/menu/{id}")
+	public List<Menu> getAllUserMenu(
+			@PathVariable("id") Integer id
+			) throws IOException 
+	{
+		return menuDAO.findAllRestaurantMenu(id);
 	}
 
 	

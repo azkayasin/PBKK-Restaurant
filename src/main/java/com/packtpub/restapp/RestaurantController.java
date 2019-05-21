@@ -12,7 +12,12 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +28,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.packtpub.aop.AdminTokenRequired;
 import com.packtpub.aop.RestaurantTokenRequired;
@@ -33,15 +40,25 @@ import com.packtpub.dao.RestaurantDAO;
 import com.packtpub.model.Menu;
 import com.packtpub.model.Restaurant;
 import com.packtpub.model.User;
+import com.packtpub.property.FileStorageProperties;
+import com.packtpub.service.FileStorageService;
 import com.packtpub.service.RestaurantService;
 import com.packtpub.service.SecurityService;
 import com.packtpub.util.Util;
 
+@SpringBootApplication
+@EnableConfigurationProperties({
+        FileStorageProperties.class
+})
 @RestController
 @RequestMapping("/restaurant")
 public class RestaurantController {
+	
 	@Autowired
 	RestaurantDAO restaurantDAO;
+	
+	@Autowired
+	FileStorageService fstorage;
 	
 	@Autowired
 	TokenDAO tokenDAO;
@@ -51,6 +68,7 @@ public class RestaurantController {
 	
 	@Autowired
 	RestaurantService restaurantService;
+
 	
 	@Autowired
 	SecurityService securityService;
@@ -195,17 +213,29 @@ public class RestaurantController {
 			@RequestParam(value = "name") String name,
 			@RequestParam(value = "harga") Double harga,
 			@RequestParam(value = "kategori") String kategori,
-			@RequestParam(value = "deskripsi") String deskripsi
+			@RequestParam(value = "deskripsi") String deskripsi,
+			@RequestParam(value = "gambar") MultipartFile file
 			) throws IOException 
 	{
 		int restoId=securityService.getUserId();
 		
 		checkMenuName(name,restoId);
+
+		String fileName = fstorage.storeFile(file);
+
+        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("restaurant/upload/images/")
+                .path(fileName)
+                .toUriString();
+
+//        return new UploadFileResponse(fileName, fileDownloadUri,
+//                file.getContentType(), file.getSize());
 		
 		Menu menu=new Menu();
 		menu.setName(name);
 		menu.setHarga(harga);
 		menu.setStock(1);
+		menu.setGambar(fileDownloadUri);
 		menu.setDeskripsi(deskripsi);
 		menu.setRes_id(restoId);
 		menu.setKategori(kategori);
@@ -213,6 +243,14 @@ public class RestaurantController {
 		menu.setCreatedAt(new Date());
 		menuDAO.save(menu);
 		return Util.getSuccessResult(menu);
+	}
+	
+	@RequestMapping(value = "/upload/images/{filename:.+}", method = RequestMethod.GET)
+	public ResponseEntity<Resource> getImage(@PathVariable String filename) {
+		Resource resource = fstorage.loadFileAsResource(filename);
+		return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_JPEG)
+                .body(resource);
 	}
 	
 	@ResponseBody

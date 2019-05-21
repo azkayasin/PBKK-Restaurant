@@ -13,9 +13,11 @@
 ---
 | Method | End Point | Parameter | Privilege | Description |
 | ------------- | ------------- | ------------- | ------------- | ------------- |
+|GET| /restaurant/lists | - | User | Lists all restaurants. |
 |POST| /restaurant/deactive/{id} | - | Admin | Remove  restaurant verification. |
 |POST| /restaurant/data | name, alamat, deskripsi, jam_buka, jam_tutup, kategori | Restaurant| Register restaurant data. |
 |POST| /restaurant/open | - | Restaurant| Open restaurant. |
+|POST| /restaurant/deal | deal | Restaurant | Deals added by restaurant. |
 |POST| /restaurant/close | - | Restaurant| Close restaurant. |
 |PUT| /restaurant/updatedata | name, alamat, deskripsi, jam_buka, jam_tutup, kategori | Restaurant| Update restaurant data. |
 

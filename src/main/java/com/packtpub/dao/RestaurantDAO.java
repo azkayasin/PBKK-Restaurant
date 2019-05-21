@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import com.packtpub.model.Menu;
 import com.packtpub.model.Restaurant;
 import com.packtpub.model.User;
 import com.packtpub.repository.RestaurantRepository;
@@ -135,5 +136,18 @@ public class RestaurantDAO {
 		}
 //		return resto;
 		
+	}
+
+	public List<Restaurant> findAllRestaurant() {
+		return restaurantRepository.findAll();
+	}
+
+	public void dealRestaurant(Integer Id, String deal) {
+		Restaurant resto=restaurantRepository.findByIdrestaurant(Id);
+		if (resto != null)
+		{
+			resto.setDeals(deal);
+			restaurantRepository.save(resto);
+		}
 	}
 }

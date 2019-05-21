@@ -102,6 +102,27 @@ public class RestaurantController {
 	}
 	
 	@ResponseBody
+	@UserTokenRequired
+	@RequestMapping("/lists")
+	public List<Restaurant> getAllRestaurant() 
+	{
+		return restaurantDAO.findAllRestaurant();
+	}
+	
+	@ResponseBody
+	@RestaurantTokenRequired
+	@RequestMapping(value = "/deal", method = RequestMethod.POST)
+	public Map<String, Object> setDeals(
+			@RequestParam(value = "deal") String deal) throws IOException 
+	{
+		int restoId=securityService.getUserId();
+		restaurantDAO.dealRestaurant(restoId, deal);
+		
+		return Util.getSuccessResult("Restaurant deal success");
+	}
+	
+	
+	@ResponseBody
 	@RestaurantTokenRequired
 	@RequestMapping(value = "/open", method = RequestMethod.POST)
 	public Map<String, Object> openRestaurant() throws IOException 
